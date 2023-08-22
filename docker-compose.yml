@@ -1,0 +1,38 @@
+version: '3'
+services:
+  database:
+    build:
+      context: database/
+      dockerfile: Dockerfile
+    container_name: db
+    restart: always
+    ports:
+      - '5432:5432'
+
+  datagen:
+    build:
+      context: backend/
+      dockerfile: Datagenfile
+    container_name: datagen
+    depends_on: [database]
+    restart: always
+
+  backend:
+    build:
+      context: backend/
+      dockerfile: Dockerfile
+    container_name: app
+    depends_on: [database]
+    restart: always
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build:
+      context: frontend/
+      dockerfile: Dockerfile
+    container_name: frontend
+    depends_on: [database,backend]
+    restart: always
+    ports:
+      - "80:80"

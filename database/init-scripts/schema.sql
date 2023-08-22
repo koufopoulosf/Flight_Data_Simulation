@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS flight_data(
+    id SERIAL PRIMARY KEY,
+    lat NUMERIC(12,9),
+    long NUMERIC(12,9)
+);

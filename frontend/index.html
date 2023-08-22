@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Flight Data Simulation</title>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/jquery@3.7.0/dist/jquery.min.js"></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <style>
+    /* Reset margin and padding for body and html elements */
+    body, html {
+      margin: 0;
+      padding: 0;
+    }
+    
+    /* Set map container to full viewport height and width */
+    #map {
+      height: 100vh;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+
+const map = L.map('map').setView([51.1657, 10.4515], 5); // Set initial view to Germany
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+const planesLayer = new L.LayerGroup();
+map.addLayer(planesLayer); // Add the layer to the map
+
+const markerMap = {}; // Keep track of markers by ID
+
+function fetchPlanes() {
+    $.getJSON(`http://${window.location.hostname}:8000/v1/planes`)
+        .then(function (data) {
+            planesLayer.clearLayers(); // Clear existing markers
+            
+            for (let i = 0; i < data.length; i++) {
+                const id = data[i].id;
+                const lat = parseFloat(data[i].lat);
+                const lng = parseFloat(data[i].long);
+
+                const marker = L.marker([lat, lng], {
+                    icon: L.icon({
+                        iconUrl: "./assets/plane.png",
+                        iconSize: [24,24]
+                    }),
+                });
+
+                marker.bindPopup(`PlaneID: ${id}`); // Bind popup to marker
+
+                planesLayer.addLayer(marker);
+
+                markerMap[id] = marker;
+            }
+        })
+        .fail(function(err){
+            console.log(err.responseText)
+        });
+}
+
+fetchPlanes();
+
+setInterval(() => {
+    fetchPlanes();
+}, 1000);
+
+</script>
+</body>
+</html>
